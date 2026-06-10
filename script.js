@@ -55,7 +55,7 @@ function readLiveGUIParams() {
         recSeconds: parseFloat(document.getElementById('recTime').value)   || 6,
         roomW:      parseInt(document.getElementById('roomWidth').value)   || 600,
         roomH:      parseInt(document.getElementById('roomHeight').value)  || 400,
-        mobility:   parseFloat(document.getElementById('mobility').value)  || 2.0,
+        mobility:   document.getElementById('mobility') ? parseFloat(document.getElementById('mobility').value) : 2.0,
         radius:     parseInt(document.getElementById('radius').value)      || 12,
     };
 }
@@ -355,8 +355,8 @@ function initABM() {
 
     for (let i = 0; i < p.N; i++) {
         const angle = Math.random() * Math.PI * 2;
-        // Wenn Mobilität auf 0 steht, ist die Startgeschwindigkeit absolut 0
-        const speed = p.mobility < 0.01 ? 0 : p.mobility * (0.6 + Math.random() * 0.8);
+        // Wenn die Mobilität 0 ist, wird die Geschwindigkeit rigoros auf 0 gesetzt
+        const speed = p.mobility <= 0.001 ? 0 : p.mobility * (0.6 + Math.random() * 0.8);
         
         abmAgents.push({
             x: Math.random() * p.roomW, 
@@ -382,8 +382,8 @@ function tickABM() {
     const p = activeSimulationParams; const gamma = 1 / p.recSeconds; const betaEff = computeEffectiveBeta(p); const recTicks = p.recSeconds * FPS; abmTick++; const r2 = p.radius * p.radius;
 
     for (const ag of abmAgents) {
-        // Wenn die Simulation mit Mobilität 0 gestartet wurde, bewege nichts
-        if (p.mobility > 0.01) {
+        // Bewegung komplett blockieren, wenn die Simulation im Stillstand gestartet wurde
+        if (p.mobility > 0.001) {
             if (Math.random() < 0.01) { 
                 const a = Math.random() * Math.PI * 2; 
                 const spd = Math.hypot(ag.vx, ag.vy); 
@@ -393,14 +393,11 @@ function tickABM() {
             ag.x += ag.vx; 
             ag.y += ag.vy;
             
-            // Kollision mit den Wänden
             if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } 
             if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
             if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } 
             if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
         }
-        
-        // Infektionszeit-Tracker (bleibt aktiv, damit Genesung klappt)
         if (ag.state === 'I' && abmTick - ag.infectedAt >= recTicks) ag.state = 'R';
     }
 
