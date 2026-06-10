@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Epidemie-Simulator für den Unterricht</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <h1>Epidemie-Simulator</h1>
+        <div class="school-badge">Unterrichts-Modus</div>
+        
+        <h2 id="sidebarTitle">SIR Parameter</h2>
+        
+        <div id="paramNotice" class="param-notice hidden">
+            💡 Regler verändert! Neue Werte gelten erst ab nächstem Start.
+        </div>
+
+        <div class="input-card">
+            <div class="input-group">
+                <label>Populationsgröße (N)</label>
+                <input type="number" id="population" value="1000">
+            </div>
+            <div class="input-group">
+                <label>Start-Infizierte (I₀)</label>
+                <input type="number" id="infected" value="5">
+            </div>
+            <div class="input-group">
+                <label>Start-Immunität (R₀) / Impfquote: <span id="vaccinatedVal">0</span>%</label>
+                <input type="range" id="vaccinated" min="0" max="100" step="5" value="0">
+            </div>
+        </div>
+        
+        <div class="input-card">
+            <div class="input-group">
+                <label>Ansteckungsrate (β): <span id="infRateVal">30</span>%</label>
+                <input type="range" id="infRate" min="1" max="100" step="1" value="30">
+            </div>
+            <div class="input-group">
+                <label>Genesungsdauer (in Sekunden)</label>
+                <input type="number" id="recTime" value="6">
+            </div>
+        </div>
+        
+        <div id="spatialParameters" class="input-card hidden">
+            <h3>Raum-Einstellungen</h3>
+            <div class="input-group row-inputs">
+                <div>
+                    <label>Breite (px)</label>
+                    <input type="number" id="roomWidth" value="600" min="200" max="1200">
+                </div>
+                <div>
+                    <label>Höhe (px)</label>
+                    <input type="number" id="roomHeight" value="400" min="200" max="800">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Mobilität (Tempo): <span id="mobilityVal">2.0</span></label>
+                <input type="range" id="mobility" min="0" max="4" step="0.1" value="2.0">
+            </div>
+            <div class="input-group">
+                <label>Ansteckungsradius: <span id="radiusVal">12</span> px</label>
+                <input type="range" id="radius" min="2" max="30" step="1" value="12">
+            </div>
+        </div>
+
+        <button id="startBtn">Simulation starten</button>
+        <button id="exportCsvBtn" class="export-btn disabled" disabled>📊 Daten als CSV exportieren</button>
+    </aside>
+
+    <main class="main-content">
+        <div class="main-tabs">
+            <button class="main-tab-btn active" data-model="sir-model">Klassisches SIR-Modell (Formel-basiert)</button>
+            <button class="main-tab-btn" data-model="spatial-model">Raum-Zeit-Modell (Agenten-basiert)</button>
+        </div>
+
+        <div class="sub-tabs">
+            <button class="sub-tab-btn active" data-view="agent-view">Anschauung: Simulation</button>
+            <button class="sub-tab-btn" data-view="graph-view">Auswertung: Diagramm & Highlights</button>
+            <button id="infoModalBtn" class="info-btn">❓ Begriffe erklären</button>
+        </div>
+
+        <div id="agent-view" class="view-content active">
+            <div class="canvas-viewport">
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="simulationCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div id="graph-view" class="view-content">
+            <div class="chart-container">
+                <canvas id="epicenterChart"></canvas>
+            </div>
+        </div>
+
+        <div class="formula-lab">
+            <div class="formula-title">🧮 Live-Mathematik (Differentialgleichungen)</div>
+            <div class="formula-grid">
+                <div class="formula-card">
+                    <span class="math-sym">R<sub>eff</sub></span>
+                    <span class="math-desc">Effektive Reproduktionszahl</span>
+                    <span id="mathReff" class="math-val">0.00</span>
+                </div>
+                <div class="formula-card">
+                    <span class="math-sym">dS/dt</span>
+                    <span class="math-desc">Gesunde / Sekunde</span>
+                    <span id="mathDs" class="math-val" style="color: #3b82f6;">0.0</span>
+                </div>
+                <div class="formula-card">
+                    <span class="math-sym">dI/dt</span>
+                    <span class="math-desc">Infizierte / Sekunde</span>
+                    <span id="mathDi" class="math-val" style="color: #ef4444;">0.0</span>
+                </div>
+                <div class="formula-card">
+                    <span class="math-sym">dR/dt</span>
+                    <span class="math-desc">Genesene / Sekunde</span>
+                    <span id="mathDr" class="math-val" style="color: #10b981;">0.0</span>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="explanationModal" class="modal hidden">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2>Epidemiologische Kernkonzepte</h2>
+        <hr class="modal-sep">
+        
+        <h3>1. Infektions-Peak ("Flatten the Curve")</h3>
+        <p>Der Peak stellt den Höchststand der gleichzeitig Erkrankten dar. Im Unterricht ist das der wichtigste Bezug zum Gesundheitssystem: Ist die Kurve zu steil, droht eine Überlastung der Krankenhäuser.</p>
+        <p><strong>Warum entsteht er dort?</strong> Zu Beginn infiziert eine kranke Person weit mehr als eine gesunde Person. Erst wenn das Verhältnis von gesunden Personen zu infektiösen Personen kippt, flacht die Kurve ab. Am mathematischen Peak infiziert jede kranke Person im Durchschnitt exakt eine weitere Person ($R_{eff} = 1$). Danach sinken die Zahlen.</p>
+
+        <h3>2. Schwelle zur Herdenimmunität</h3>
+        <p>Herdenimmunität bedeutet, dass so viele Individuen in einer Population immun sind, dass sich ein Erreger nicht mehr epidemisch ausbreiten kann. Die ungeschützten Personen werden von der Gemeinschaft ("Herde") indirekt geschützt.</p>
+        <p><strong>Warum entsteht sie genau dort?</strong> Sobald die Zahl der anfälligen Personen unter den kritischen Schwellenwert fällt, reicht die Dichte an Kontakten nicht mehr aus, um die Ausbreitung aufrechtzuerhalten. Das ist der exakte Wendepunkt, an dem die Neuansteckungen dauerhaft abflauen.</p>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
