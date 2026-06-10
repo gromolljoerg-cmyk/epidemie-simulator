@@ -375,7 +375,7 @@ function tickABM() {
     const p = activeSimulationParams; const gamma = 1 / p.recSeconds; const betaEff = computeEffectiveBeta(p); const recTicks = p.recSeconds * FPS; abmTick++; const r2 = p.radius * p.radius;
 
     for (const ag of abmAgents) {
-        // FIX: Wenn die Mobilität auf 0 gesetzt ist, Vektoren nullen und Bewegung überspringen
+        // HIER DER FIXED BEREICH: Wenn Mobilität auf 0 steht, Vektoren nullen und Bewegung komplett blockieren
         if (p.mobility <= 0.001) {
             ag.vx = 0;
             ag.vy = 0;
@@ -385,7 +385,6 @@ function tickABM() {
             if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
             if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
         }
-        
         if (ag.state === 'I' && abmTick - ag.infectedAt >= recTicks) ag.state = 'R';
     }
 
@@ -438,4 +437,3 @@ closeModal.addEventListener('click', () => modal.classList.add('hidden'));
 window.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
 
 drawPlaceholder();
-}
