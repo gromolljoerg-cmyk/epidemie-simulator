@@ -354,10 +354,17 @@ function initABM() {
     abmAgents = []; abmTick = 0; const betaEff = computeEffectiveBeta(p); abmTheory = computeSIRTheoryAndHighlights(p, betaEff); initChart('abm', abmTheory);
 
     for (let i = 0; i < p.N; i++) {
-        const angle = Math.random() * Math.PI * 2; const speed = p.mobility * (0.6 + Math.random() * 0.8);
+        const angle = Math.random() * Math.PI * 2;
+        // Wenn Mobilität auf 0 steht, ist die Startgeschwindigkeit absolut 0
+        const speed = p.mobility < 0.01 ? 0 : p.mobility * (0.6 + Math.random() * 0.8);
+        
         abmAgents.push({
-            x: Math.random() * p.roomW, y: Math.random() * p.roomH, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
-            state: i < S_count ? 'S' : i < S_count + I0 ? 'I' : 'R', infectedAt: i < S_count ? null : (i < S_count + I0 ? 0 : null),
+            x: Math.random() * p.roomW, 
+            y: Math.random() * p.roomH, 
+            vx: Math.cos(angle) * speed, 
+            vy: Math.sin(angle) * speed,
+            state: i < S_count ? 'S' : i < S_count + I0 ? 'I' : 'R', 
+            infectedAt: i < S_count ? null : (i < S_count + I0 ? 0 : null),
         });
     }
     pushChartPoint(0, S_count, I0, R0_init, betaEff, 1/p.recSeconds);
@@ -375,16 +382,25 @@ function tickABM() {
     const p = activeSimulationParams; const gamma = 1 / p.recSeconds; const betaEff = computeEffectiveBeta(p); const recTicks = p.recSeconds * FPS; abmTick++; const r2 = p.radius * p.radius;
 
     for (const ag of abmAgents) {
-        // Sicherer Fix gegen Zittern: Wenn Mobilität auf 0 steht, komplett einfrieren
-        if (p.mobility <= 0.001) {
-            ag.vx = 0;
-            ag.vy = 0;
-        } else {
-            if (Math.random() < 0.01) { const a = Math.random() * Math.PI * 2; const spd = Math.hypot(ag.vx, ag.vy); ag.vx = Math.cos(a) * spd; ag.vy = Math.sin(a) * spd; }
-            ag.x += ag.vx; ag.y += ag.vy;
-            if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
-            if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
+        // Wenn die Simulation mit Mobilität 0 gestartet wurde, bewege nichts
+        if (p.mobility > 0.01) {
+            if (Math.random() < 0.01) { 
+                const a = Math.random() * Math.PI * 2; 
+                const spd = Math.hypot(ag.vx, ag.vy); 
+                ag.vx = Math.cos(a) * spd; 
+                ag.vy = Math.sin(a) * spd; 
+            }
+            ag.x += ag.vx; 
+            ag.y += ag.vy;
+            
+            // Kollision mit den Wänden
+            if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } 
+            if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
+            if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } 
+            if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
         }
+        
+        // Infektionszeit-Tracker (bleibt aktiv, damit Genesung klappt)
         if (ag.state === 'I' && abmTick - ag.infectedAt >= recTicks) ag.state = 'R';
     }
 
