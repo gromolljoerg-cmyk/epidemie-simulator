@@ -44,9 +44,7 @@ const paramNotice = document.getElementById('paramNotice');
 const resetBtn = document.createElement('button');
 resetBtn.id = 'resetBtn';
 resetBtn.textContent = 'Zurücksetzen';
-if (startBtn) {
-    startBtn.after(resetBtn);
-}
+startBtn.after(resetBtn);
 
 function readLiveGUIParams() {
     return {
@@ -65,7 +63,7 @@ function readLiveGUIParams() {
 const allInputs = document.querySelectorAll('.sidebar input');
 allInputs.forEach(input => {
     input.addEventListener('input', () => {
-        if (!isFirstStart && paramNotice) { 
+        if (!isFirstStart) { 
             paramNotice.classList.remove('hidden');
             input.classList.add('unlinked-input');
         }
@@ -76,18 +74,10 @@ function clearInputHighlights() {
     document.querySelectorAll('.sidebar input').forEach(i => i.classList.remove('unlinked-input'));
 }
 
-if (document.getElementById('vaccinated')) {
-    document.getElementById('vaccinated').addEventListener('input', e => document.getElementById('vaccinatedVal').textContent = e.target.value);
-}
-if (document.getElementById('infRate')) {
-    document.getElementById('infRate').addEventListener('input', e => document.getElementById('infRateVal').textContent = e.target.value);
-}
-if (document.getElementById('mobility')) {
-    document.getElementById('mobility').addEventListener('input', e => document.getElementById('mobilityVal').textContent = parseFloat(e.target.value).toFixed(1));
-}
-if (document.getElementById('radius')) {
-    document.getElementById('radius').addEventListener('input', e => document.getElementById('radiusVal').textContent = e.target.value);
-}
+document.getElementById('vaccinated').addEventListener('input', e => document.getElementById('vaccinatedVal').textContent = e.target.value);
+document.getElementById('infRate').addEventListener('input', e => document.getElementById('infRateVal').textContent = e.target.value);
+document.getElementById('mobility').addEventListener('input', e => document.getElementById('mobilityVal').textContent = parseFloat(e.target.value).toFixed(1));
+document.getElementById('radius').addEventListener('input', e => document.getElementById('radiusVal').textContent = e.target.value);
 
 document.querySelectorAll('.main-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -107,28 +97,19 @@ document.querySelectorAll('.sub-tab-btn').forEach(btn => {
         btn.classList.add('active');
         activeView = btn.dataset.view;
         document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
-        const targetView = document.getElementById(activeView);
-        if (targetView) targetView.classList.add('active');
+        document.getElementById(activeView).classList.add('active');
         if (activeView === 'graph-view' && chartInitialized && epicenterChart) epicenterChart.update('none');
     });
 });
 
-if (startBtn) {
-    startBtn.addEventListener('click', () => { if (simulationRunning) stopSimulation(); else startSimulation(); });
-}
-if (resetBtn) {
-    resetBtn.addEventListener('click', resetSimulation);
-}
-if (exportCsvBtn) {
-    exportCsvBtn.addEventListener('click', exportToCSV);
-}
+startBtn.addEventListener('click', () => { if (simulationRunning) stopSimulation(); else startSimulation(); });
+resetBtn.addEventListener('click', resetSimulation);
+exportCsvBtn.addEventListener('click', exportToCSV);
 
 function startSimulation() {
     simulationRunning = true;
-    if (startBtn) {
-        startBtn.textContent = 'Simulation stoppen';
-        startBtn.style.backgroundColor = '#ef4444'; 
-    }
+    startBtn.textContent = 'Simulation stoppen';
+    startBtn.style.backgroundColor = '#ef4444'; 
     lastTimestamp = 0;
 
     if (isFirstStart) {
@@ -138,13 +119,11 @@ function startSimulation() {
         liveHerdPoint = null;
         liveDataHistory = []; 
         
-        if (exportCsvBtn) {
-            exportCsvBtn.classList.add('disabled');
-            exportCsvBtn.disabled = true;
-        }
+        exportCsvBtn.classList.add('disabled');
+        exportCsvBtn.disabled = true;
 
         clearInputHighlights();
-        if (paramNotice) paramNotice.classList.add('hidden');
+        paramNotice.classList.add('hidden');
         
         if (activeModel === 'sir-model') initSIR(); else initABM();
         isFirstStart = false;
@@ -154,13 +133,11 @@ function startSimulation() {
 
 function stopSimulation() {
     simulationRunning = false;
-    if (startBtn) {
-        startBtn.textContent = 'Simulation fortsetzen';
-        startBtn.style.backgroundColor = '#10b981';
-    }
+    startBtn.textContent = 'Simulation fortsetzen';
+    startBtn.style.backgroundColor = '#10b981';
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
     
-    if (liveDataHistory.length > 0 && exportCsvBtn) {
+    if (liveDataHistory.length > 0) {
         exportCsvBtn.classList.remove('disabled');
         exportCsvBtn.disabled = false;
     }
@@ -169,12 +146,10 @@ function stopSimulation() {
 function resetSimulation() {
     stopSimulation();
     clearInputHighlights();
-    if (paramNotice) paramNotice.classList.add('hidden');
-    if (startBtn) startBtn.textContent = 'Simulation starten';
-    if (exportCsvBtn) {
-        exportCsvBtn.classList.add('disabled');
-        exportCsvBtn.disabled = true;
-    }
+    paramNotice.classList.add('hidden');
+    startBtn.textContent = 'Simulation starten';
+    exportCsvBtn.classList.add('disabled');
+    exportCsvBtn.disabled = true;
     isFirstStart = true;
     liveDataHistory = [];
     if (epicenterChart) { epicenterChart.destroy(); epicenterChart = null; }
@@ -191,26 +166,19 @@ function updateMathDashboard(S, I, R, beta, gamma) {
     const dI_dt =  (beta * S * I) / N - gamma * I;
     const dR_dt =  gamma * I;
 
-    const mathReff = document.getElementById('mathReff');
-    const mathDs = document.getElementById('mathDs');
-    const mathDi = document.getElementById('mathDi');
-    const mathDr = document.getElementById('mathDr');
+    document.getElementById('mathReff').textContent = R_eff.toFixed(2);
+    document.getElementById('mathDs').textContent   = (dS_dt >= 0 ? '+' : '') + dS_dt.toFixed(1);
+    document.getElementById('mathDi').textContent   = (dI_dt >= 0 ? '+' : '') + dI_dt.toFixed(1);
+    document.getElementById('mathDr').textContent   = (dR_dt >= 0 ? '+' : '') + dR_dt.toFixed(1);
 
-    if (mathReff) mathReff.textContent = R_eff.toFixed(2);
-    if (mathDs) mathDs.textContent   = (dS_dt >= 0 ? '+' : '') + dS_dt.toFixed(1);
-    if (mathDi) mathDi.textContent   = (dI_dt >= 0 ? '+' : '') + dI_dt.toFixed(1);
-    if (mathDr) mathDr.textContent   = (dR_dt >= 0 ? '+' : '') + dR_dt.toFixed(1);
-
-    if (mathReff) {
-        if (R_eff > 1.0) { mathReff.style.color = '#ef4444'; } else if (R_eff > 0.01) { mathReff.style.color = '#f59e0b'; } else { mathReff.style.color = '#10b981'; }
-    }
+    const reffEl = document.getElementById('mathReff');
+    if (R_eff > 1.0) { reffEl.style.color = '#ef4444'; } else if (R_eff > 0.01) { reffEl.style.color = '#f59e0b'; } else { reffEl.style.color = '#10b981'; }
 }
 
 function initChart(mode, theoryData) {
     if (epicenterChart) { epicenterChart.destroy(); epicenterChart = null; }
     chartInitialized = true;
     const chartCanvas = document.getElementById('epicenterChart');
-    if (!chartCanvas) return;
 
     const theoryDatasets = theoryData ? [
         { label: 'S - Erwartung', data: theoryData.S.map((v,i) => ({ x: theoryData.time[i], y: v })), borderColor: '#3b82f6', borderWidth: 1.5, pointRadius: 0, tension: 0.1, fill: false, order: 3 },
@@ -270,6 +238,7 @@ function pushChartPoint(t, S, I, R, beta, gamma) {
     if (!epicenterChart || !chartInitialized) return;
     const ds = epicenterChart.data.datasets;
 
+    // Speichere Rohdaten für den CSV-Export
     liveDataHistory.push({ time: t.toFixed(2), S: S, I: I, R: R });
 
     if (I > liveMaxI) { liveMaxI = I; livePeakPoint = { x: t, y: I }; ds[2].data = [livePeakPoint]; }
@@ -282,15 +251,20 @@ function pushChartPoint(t, S, I, R, beta, gamma) {
     ds[offset + 2].data.push({ x: t, y: R });
 }
 
+// DYNAMISCHER CSV EXPORT (SCHÜTZT SICH VOR DER EXCEL-DATUMS-AUTOKORREKTUR)
 function exportToCSV() {
     if (liveDataHistory.length === 0) return;
 
+    // Header mit Semikolon als Trenner für deutschen Excel-Standard
     let csvContent = "Zeitpunkt_s;Gesunde_S;Infizierte_I;Genesene_R\r\n";
+    
     liveDataHistory.forEach(row => {
+        // Trick: ="Wert" zwingt Excel dazu, die Zahl als reinen Text zu interpretieren
         const excelSafeTime = `="${row.time}"`;
         csvContent += `${excelSafeTime};${row.S};${row.I};${row.R}\r\n`;
     });
 
+    // Erstelle Download-Link mit UTF-8-BOM (Beseitigt Formatierungsfehler in Excel)
     const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const modelName = activeModel === 'sir-model' ? "klassisches_SIR" : "Raum_Zeit_ABM";
@@ -322,10 +296,11 @@ function computeSIRTheoryAndHighlights(p, betaOverride) {
 
 function computeEffectiveBeta(p) { const area = p.roomW * p.roomH; return p.beta * Math.PI * p.radius * p.radius * p.N / area; }
 
+// 1) SIR-MODELL RUNNER
 function initSIR() {
     const p = activeSimulationParams; canvas.width = 600; canvas.height = 400;
     const R0_init = Math.round(p.N * p.vaccPct / 100); const I0 = Math.min(p.I0, p.N - R0_init); const S_count = p.N - I0 - R0_init;
-    sirAgents = []; sirTick = 0; let sirTheory = computeSIRTheoryAndHighlights(p); initChart('sir', sirTheory);
+    sirAgents = []; sirTick = 0; sirTheory = computeSIRTheoryAndHighlights(p); initChart('sir', sirTheory);
 
     for (let i = 0; i < p.N; i++) {
         sirAgents.push({
@@ -372,10 +347,11 @@ function drawSIRAgents(S, I, R) {
     drawHUD(600, 400, S, I, R, sirAgents.length, sirTick);
 }
 
+// 2) ABM RUNNER
 function initABM() {
     const p = activeSimulationParams; canvas.width = p.roomW; canvas.height = p.roomH;
     const R0_init = Math.round(p.N * p.vaccPct / 100); const I0 = Math.min(p.I0, p.N - R0_init); const S_count = p.N - I0 - R0_init;
-    abmAgents = []; abmTick = 0; const betaEff = computeEffectiveBeta(p); let abmTheory = computeSIRTheoryAndHighlights(p, betaEff); initChart('abm', abmTheory);
+    abmAgents = []; abmTick = 0; const betaEff = computeEffectiveBeta(p); abmTheory = computeSIRTheoryAndHighlights(p, betaEff); initChart('abm', abmTheory);
 
     for (let i = 0; i < p.N; i++) {
         const angle = Math.random() * Math.PI * 2; const speed = p.mobility * (0.6 + Math.random() * 0.8);
@@ -399,15 +375,10 @@ function tickABM() {
     const p = activeSimulationParams; const gamma = 1 / p.recSeconds; const betaEff = computeEffectiveBeta(p); const recTicks = p.recSeconds * FPS; abmTick++; const r2 = p.radius * p.radius;
 
     for (const ag of abmAgents) {
-        if (p.mobility <= 0.001) {
-            ag.vx = 0;
-            ag.vy = 0;
-        } else {
-            if (Math.random() < 0.01) { const a = Math.random() * Math.PI * 2; const spd = Math.hypot(ag.vx, ag.vy); ag.vx = Math.cos(a) * spd; ag.vy = Math.sin(a) * spd; }
-            ag.x += ag.vx; ag.y += ag.vy;
-            if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
-            if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
-        }
+        if (Math.random() < 0.01) { const a = Math.random() * Math.PI * 2; const spd = Math.hypot(ag.vx, ag.vy); ag.vx = Math.cos(a) * spd; ag.vy = Math.sin(a) * spd; }
+        ag.x += ag.vx; ag.y += ag.vy;
+        if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
+        if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
         if (ag.state === 'I' && abmTick - ag.infectedAt >= recTicks) ag.state = 'R';
     }
 
@@ -455,11 +426,8 @@ function drawPlaceholder() {
 const modal = document.getElementById('explanationModal');
 const modalBtn = document.getElementById('infoModalBtn');
 const closeModal = document.querySelector('.close-modal');
-
-if (modal && modalBtn && closeModal) {
-    modalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
-    closeModal.addEventListener('click', () => modal.classList.add('hidden'));
-    window.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
-}
+modalBtn.addEventListener('click', () => modal.classList.remove('hidden'));
+closeModal.addEventListener('click', () => modal.classList.add('hidden'));
+window.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hidden'); });
 
 drawPlaceholder();
