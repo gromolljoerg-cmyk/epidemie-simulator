@@ -1,5 +1,5 @@
 // ============================================================
-//  EPIDEMIE-SIMULATOR — script.js (Vollversion mit Excel-Datums-Schutz)
+//  EPIDEMIE-SIMULATOR — script.js (Vollversion mit Dropdown-Navigation)
 // ============================================================
 
 let animationId       = null;
@@ -79,26 +79,52 @@ document.getElementById('infRate').addEventListener('input', e => document.getEl
 document.getElementById('mobility').addEventListener('input', e => document.getElementById('mobilityVal').textContent = parseFloat(e.target.value).toFixed(1));
 document.getElementById('radius').addEventListener('input', e => document.getElementById('radiusVal').textContent = e.target.value);
 
+function switchModel(modelType) {
+    if (activeModel === modelType) return;
+    
+    document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+    const targetBtn = document.querySelector(`.main-tab-btn[data-model="${modelType}"]`);
+    if (targetBtn) targetBtn.classList.add('active');
+    
+    activeModel = modelType;
+    const isSpatial = activeModel === 'spatial-model';
+    if (document.getElementById('spatialParameters')) document.getElementById('spatialParameters').classList.toggle('hidden', !isSpatial);
+    if (document.getElementById('sidebarTitle')) document.getElementById('sidebarTitle').textContent = isSpatial ? 'ABM Parameter' : 'SIR Parameter';
+    resetSimulation();
+}
+
 document.querySelectorAll('.main-tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeModel = btn.dataset.model;
-        const isSpatial = activeModel === 'spatial-model';
-        if (document.getElementById('spatialParameters')) document.getElementById('spatialParameters').classList.toggle('hidden', !isSpatial);
-        if (document.getElementById('sidebarTitle')) document.getElementById('sidebarTitle').textContent = isSpatial ? 'ABM Parameter' : 'SIR Parameter';
-        resetSimulation();
+        switchModel(btn.dataset.model);
     });
 });
 
 document.querySelectorAll('.sub-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+    btn.addEventListener('click', (e) => {
+        // Finde heraus, zu welchem Modell dieses Dropdown gehört
+        const parentDropdown = btn.closest('.tab-dropdown');
+        const associatedModel = parentDropdown.querySelector('.main-tab-btn').dataset.model;
+        
+        // Falls das Modell gewechselt wurde, führen wir den Modellwechsel aus (inkl. Reset)
+        if (activeModel !== associatedModel) {
+            switchModel(associatedModel);
+        }
+
+        // View wechseln
         activeView = btn.dataset.view;
+        
+        // Aktive Klassen synchronisieren (über alle Dropdowns hinweg)
+        document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll(`.sub-tab-btn[data-view="${activeView}"]`).forEach(b => b.classList.add('active'));
+        
         document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
         document.getElementById(activeView).classList.add('active');
-        if (activeView === 'graph-view' && chartInitialized && epicenterChart) epicenterChart.update('none');
+        
+        if (activeView === 'graph-view' && chartInitialized && epicenterChart) {
+            epicenterChart.update('none');
+        }
+        
+        e.stopPropagation();
     });
 });
 
