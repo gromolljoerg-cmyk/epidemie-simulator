@@ -65,13 +65,14 @@ const tutText            = document.getElementById('tutText');
 const tutPrevBtn         = document.getElementById('tutPrevBtn');
 const tutNextBtn         = document.getElementById('tutNextBtn');
 
-// Definition der Tutorial-Schritte
+// Definition der Tutorial-Schritte (7 Schritte inklusive ABM und Situation)
 const tutorialSteps = [
     {
         title: "Willkommen beim Epidemie-Simulator! 👋",
         text: "In diesem Tutorial lernst du Schritt für Schritt, wie sich Infektionen mathematisch und räumlich ausbreiten. Wir fangen ganz einfach an. Schau dir die Sidebar links an: Aktuell siehst du nur die Populationsgröße (N). Klicke auf 'Simulation starten', um zu sehen, wie sich die Punkte verteilen.",
         setup: () => {
             hideAllUIElements();
+            switchModelDirect('sir-model');
             showElements(['cardBasicPop', 'grpPopulation']);
         }
     },
@@ -80,6 +81,7 @@ const tutorialSteps = [
         text: "Jetzt schalten wir das Eingabefeld für die 'Start-Infizierten' frei. Ohne infizierte Personen kann sich keine Krankheit ausbreiten. Stelle ruhig mal 5 oder 10 Personen ein und klicke auf Start. Du siehst rote infektiöse Punkte, die gesunde blaue Punkte anstecken!",
         setup: () => {
             hideAllUIElements();
+            switchModelDirect('sir-model');
             showElements(['cardBasicPop', 'grpPopulation', 'grpInfected']);
         }
     },
@@ -88,6 +90,7 @@ const tutorialSteps = [
         text: "Nun kommen die Kernraten ins Spiel. Die Ansteckungsrate (β) steuert, wie infektiös die Krankheit ist. Die Genesungsdauer gibt an, wie viele Sekunden ein Punkt rot bleibt, bevor er grün (genesen und immun) wird. Jetzt ist auch die 'Live-Mathematik' unten aktiv, die dir zeigt, wie viele Menschen pro Sekunde ihren Zustand wechseln.",
         setup: () => {
             hideAllUIElements();
+            switchModelDirect('sir-model');
             showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'formulaLabBox']);
         }
     },
@@ -96,20 +99,49 @@ const tutorialSteps = [
         text: "Wechsle oben im Menü über den Reiter 'Klassisches SIR-Modell' auf den Unterpunkt 'Auswertung: Diagramm'. Dort siehst du die Kurven live wachsen! Achte besonders auf den goldenen Punkt (Infektions-Peak) und den lila Kreis (Schwelle zur Herdenimmunität).",
         setup: () => {
             hideAllUIElements();
+            switchModelDirect('sir-model');
             showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'formulaLabBox']);
         }
     },
     {
-        title: "Der Realitätscheck: Das Agenten-basierte Modell 🏃‍♂️",
-        text: "Zum Schluss schalten wir das 'Raum-Zeit-Modell' frei. Schalte oben auf den zweiten Hauptreiter um. Hier bewegen sich die Punkte in einem echten virtuellen Raum! Du kannst jetzt sogar die Bewegungsgeschwindigkeit (Mobilität) und den Ansteckungsradius der Erreger manipulieren. Viel Spaß beim Erforschen!",
+        title: "Der Realitätscheck: Das Raum-Zeit-Modell 🏃‍♂️",
+        text: "Das klassische Modell nimmt an, dass jeder jeden sofort anstecken kann. In der Realität bewegen wir uns aber! Schalte oben auf den zweiten Hauptreiter 'Raum-Zeit-Modell' um. In diesem Agenten-basierten Modell (ABM) bewegen sich die Punkte in einem echten Koordinatensystem und stecken andere nur bei direktem Abstand an.",
         setup: () => {
             hideAllUIElements();
-            showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'formulaLabBox', 'tabSpatialDropdown', 'spatialParameters']);
+            switchModelDirect('spatial-model');
+            showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'tabSpatialDropdown', 'spatialParameters', 'grpMobility', 'grpRadius']);
+        }
+    },
+    {
+        title: "Zufall vs. Perfekte Mathematik ⚖️",
+        text: "Starte das Raum-Zeit-Modell und wechsle in die Auswertung (Diagramm). Fällt dir etwas auf? Die gestrichelten Linien (Live-Simulation) weichen von den durchgezogenen dünnen Linien (theoretische Berechnung) ab! Durch räumliche Ballung und den Faktor Zufall verhalten sich echte Populationen oft anders als die reine Labor-Formel.",
+        setup: () => {
+            hideAllUIElements();
+            switchModelDirect('spatial-model');
+            showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'tabSpatialDropdown', 'spatialParameters', 'grpMobility', 'grpRadius', 'formulaLabBox']);
+        }
+    },
+    {
+        title: "🔬 Dein Forschungsauftrag: Die Schul-Grippe",
+        text: "Simuliere nun folgende Situation im 'Raum-Zeit-Modell': Eine Grippewelle bricht an einer Schule aus. Parameter: N=600 Schüler, I₀=3 Infizierte, Ansteckungsrate=40%, Genesungsdauer=8s. Erforsche zwei Szenarien: 1) Hohe Mobilität (Klassisches Pausengetümmel: Mobilität 2.5). 2) Lockdown (Strikte Trennung: Mobilität 0.3). Beobachte im Diagramm, wie sich der goldene Peak verändert!",
+        setup: () => {
+            showAllUIElements();
+            switchModelDirect('spatial-model');
+            
+            // Setze die Werte für das Szenario als Starthilfe voraus
+            document.getElementById('population').value = 600;
+            document.getElementById('infected').value = 3;
+            document.getElementById('infRate').value = 40;
+            document.getElementById('infRateVal').textContent = 40;
+            document.getElementById('recTime').value = 8;
+            document.getElementById('mobility').value = 2.5;
+            document.getElementById('mobilityVal').textContent = "2.5";
+            document.getElementById('radius').value = 12;
+            document.getElementById('radiusVal').textContent = 12;
         }
     }
 ];
 
-// Hilfsfunktionen für das Tutorial-UI-Shifting
 function hideAllUIElements() {
     const items = ['grpInfected', 'grpVaccinated', 'cardRates', 'spatialParameters', 'tabSpatialDropdown', 'formulaLabBox'];
     items.forEach(id => {
@@ -131,6 +163,17 @@ function showElements(ids) {
         const el = document.getElementById(id);
         if(el) el.classList.remove('id-hidden');
     });
+}
+
+// Direkter Modellwechsel ohne Reset-Schleife fürs Tutorial
+function switchModelDirect(modelType) {
+    activeModel = modelType;
+    document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+    const targetBtn = document.querySelector(`.main-tab-btn[data-model="${modelType}"]`);
+    if (targetBtn) targetBtn.classList.add('active');
+    const isSpatial = activeModel === 'spatial-model';
+    if (document.getElementById('spatialParameters')) document.getElementById('spatialParameters').classList.toggle('hidden', !isSpatial);
+    if (document.getElementById('sidebarTitle')) document.getElementById('sidebarTitle').textContent = isSpatial ? 'ABM Parameter' : 'SIR Parameter';
 }
 
 // LANDING PAGE EVENT LISTENERS
@@ -171,7 +214,6 @@ tutNextBtn.addEventListener('click', () => {
         updateTutorialStep();
         resetSimulation();
     } else {
-        // Am Ende angekommen -> wechsle in den freien Modus
         currentMode = "free";
         tutorialOverlay.classList.add('hidden');
         modeBadge.textContent = "Freies Simulieren";
@@ -196,15 +238,13 @@ function updateTutorialStep() {
     tutTitle.textContent = stepData.title;
     tutText.textContent = stepData.text;
     
-    // Buttons steuern
     tutPrevBtn.disabled = (tutorialStep === 0);
     if (tutorialStep === tutorialSteps.length - 1) {
-        tutNextBtn.textContent = "Freies Simulieren starten 🚀";
+        tutNextBtn.textContent = "In den freien Modus wechseln 🚀";
     } else {
         tutNextBtn.textContent = "Weiter";
     }
     
-    // UI Zustand herstellen
     stepData.setup();
 }
 
