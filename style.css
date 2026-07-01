@@ -14,6 +14,56 @@ body {
     overflow: hidden; 
 }
 
+/* LANDING PAGE STYLING */
+.landing-page {
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    background-color: #0f172a;
+    display: flex; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+.landing-card {
+    background-color: #1e293b;
+    padding: 40px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    max-width: 800px; width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+.landing-card h1 {
+    font-size: 2.5rem; color: #fff; margin-bottom: 10px; font-weight: 800;
+}
+.landing-subtitle {
+    color: #94a3b8; font-size: 1.1rem; margin-bottom: 40px;
+}
+.mode-selection {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+}
+.mode-box {
+    background-color: #0f172a;
+    border: 2px solid #334155;
+    border-radius: 12px;
+    padding: 30px 20px;
+    cursor: pointer;
+    transition: all 0.25s ease-in-out;
+}
+.mode-box:hover {
+    transform: translateY(-4px);
+    border-color: #3b82f6;
+    background-color: #131f38;
+}
+.mode-icon {
+    font-size: 3rem; margin-bottom: 15px;
+}
+.mode-box h2 {
+    color: #fff; font-size: 1.3rem; margin-bottom: 10px;
+}
+.mode-box p {
+    color: #94a3b8; font-size: 0.9rem; line-height: 1.5;
+}
+
+/* SIMULATOR LAYOUT */
 .container { 
     display: grid; 
     grid-template-columns: 360px 1fr; 
@@ -32,11 +82,25 @@ body {
     gap: 15px;
 }
 
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+.back-menu-btn {
+    width: auto !important;
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    background-color: #475569 !important;
+}
+.back-menu-btn:hover { background-color: #64748b !important; }
+
 .sidebar h1 {
-    font-size: 1.6rem;
+    font-size: 1.3rem;
     color: #fff;
-    text-align: center;
     font-weight: 800;
+    flex: 1;
 }
 
 .school-badge {
@@ -65,6 +129,7 @@ body {
     padding: 15px;
     border-radius: 8px;
     border: 1px solid #334155;
+    transition: opacity 0.3s ease;
 }
 .input-card h3 {
     font-size: 0.9rem;
@@ -73,7 +138,7 @@ body {
     text-transform: uppercase;
 }
 
-.input-group { margin-bottom: 14px; }
+.input-group { margin-bottom: 14px; transition: all 0.3s ease; }
 .input-group:last-child { margin-bottom: 0; }
 .input-group label { display: block; margin-bottom: 6px; font-size: 0.9rem; color: #cbd5e1; }
 .input-group label span { color: #10b981; font-weight: bold; }
@@ -94,6 +159,7 @@ body {
 }
 
 .hidden { display: none !important; }
+.id-hidden { opacity: 0.05 !important; pointer-events: none !important; }
 
 button { 
     width: 100%; padding: 14px; background-color: #10b981; border: none; color: white; font-size: 1.05rem; font-weight: bold; border-radius: 6px; cursor: pointer; transition: background 0.2s; 
@@ -118,7 +184,7 @@ button:hover { background-color: #059669; }
     display: flex; flex-direction: column; padding: 20px; gap: 15px; height: 100%; overflow: hidden; background-color: #0f172a;
 }
 
-/* NAVIGATION UND HOVER-DROPDOWNS */
+/* NAVIGATION UND DROPDOWNS */
 .main-tabs { 
     display: flex; 
     gap: 12px; 
@@ -131,6 +197,7 @@ button:hover { background-color: #059669; }
 .tab-dropdown {
     position: relative;
     flex: 1;
+    transition: opacity 0.3s ease;
 }
 
 .main-tab-btn {
@@ -151,7 +218,6 @@ button:hover { background-color: #059669; }
     border-color: #047857; 
 }
 
-/* Dropdown-Menü im Grundzustand unsichtbar */
 .dropdown-content {
     display: none;
     opacity: 0;
@@ -163,7 +229,7 @@ button:hover { background-color: #059669; }
     border: 1px solid #334155;
     border-radius: 0 0 6px 6px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-    z-index: 20; /* Liegt sicher über der Canvas-Oberfläche */
+    z-index: 20; 
     padding: 6px;
     flex-direction: column;
     gap: 4px;
@@ -171,7 +237,6 @@ button:hover { background-color: #059669; }
     transition: opacity 0.15s ease-in-out;
 }
 
-/* Sicheres Einblenden bei Hover über den Eltern-Container */
 .tab-dropdown:hover .dropdown-content {
     display: flex;
     opacity: 1;
@@ -219,7 +284,32 @@ canvas { display: block; }
 #resetBtn { background-color: #334155; color: #cbd5e1; border: 1px solid #475569; margin-top: -5px; }
 #resetBtn:hover { background-color: #475569; }
 
-/* MODAL STYLING & DEFINITIVE FARBKORREKTUR */
+/* TUTORIAL OVERLAY DIALOG */
+.tutorial-overlay {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 420px;
+    background-color: #1e293b;
+    border: 2px solid #3b82f6;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    z-index: 2000;
+}
+.tutorial-progress {
+    font-size: 0.75rem; color: #3b82f6; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px;
+}
+.tutorial-overlay h3 { color: #fff; margin-bottom: 8px; font-size: 1.15rem; }
+.tutorial-overlay p { color: #cbd5e1; font-size: 0.9rem; line-height: 1.5; margin-bottom: 15px; }
+.tutorial-actions { display: flex; gap: 10px; }
+.tut-btn-primary { background-color: #3b82f6; font-size: 0.9rem; padding: 10px; }
+.tut-btn-primary:hover { background-color: #2563eb; }
+.tut-btn-secondary { background-color: #475569; font-size: 0.9rem; padding: 10px; }
+.tut-btn-secondary:hover { background-color: #64748b; }
+.tut-btn-secondary:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* TERMS MODAL */
 .modal {
     position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center;
 }
@@ -231,23 +321,14 @@ canvas { display: block; }
 .modal h2 { color: #fff; margin-bottom: 10px; font-size: 1.5rem; }
 .modal-sep { border: 0; border-top: 1px solid #334155; margin: 15px 0; }
 
-/* Explizite Klassen-Farbzuweisung (Verhindert jegliche Kaskaden-Fehler) */
-.modal h3 {
-    margin: 20px 0 8px 0; 
-    font-size: 1.1rem; 
-}
-.modal h3.modal-peak-title { 
-    color: #f59e0b !important; /* Exakt Gold/Orange wie im Live-Chart & Theorie-Peak */
-}
-.modal h3.modal-herd-title { 
-    color: #a855f7 !important; /* Exakt Violett/Lila wie an der Herdenimmunisierungsschwelle */
-}
-
+.modal h3 { margin: 20px 0 8px 0; font-size: 1.1rem; }
+.modal h3.modal-peak-title { color: #f59e0b !important; }
+.modal h3.modal-herd-title { color: #a855f7 !important; }
 .modal p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 10px; }
 
-/* FORMEL-LABOR */
+/* FORMEL LAB */
 .formula-lab {
-    background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 15px; display: flex; flex-direction: column; gap: 8px;
+    background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 12px 15px; display: flex; flex-direction: column; gap: 8px; transition: opacity 0.3s ease;
 }
 .formula-title { font-size: 0.85rem; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #94a3b8; }
 .formula-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
