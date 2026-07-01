@@ -9,10 +9,32 @@
 </head>
 <body>
 
-<div class="container">
-    <aside class="sidebar">
+<div id="landingPage" class="landing-page">
+    <div class="landing-card">
         <h1>Epidemie-Simulator</h1>
-        <div class="school-badge">Unterrichts-Modus</div>
+        <p class="landing-subtitle">Interaktives Lernen von SIR- und Agenten-basierten Modellen für den Unterricht</p>
+        <div class="mode-selection">
+            <div class="mode-box" id="chooseTutorialBtn">
+                <div class="mode-icon">📖</div>
+                <h2>Geführtes Tutorial</h2>
+                <p>Lerne die Parameter Schritt für Schritt kennen. Ideal für den Einstieg im Unterricht.</p>
+            </div>
+            <div class="mode-box" id="chooseFreeBtn">
+                <div class="mode-icon">🧪</div>
+                <h2>Freies Simulieren</h2>
+                <p>Alle Parameter stehen dir sofort zur Verfügung. Experimentiere völlig frei mit den Modellen.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="mainContainer" class="container hidden">
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <button id="backToMenuBtn" class="back-menu-btn">⬅ Menü</button>
+            <h1>Epidemie-Simulator</h1>
+        </div>
+        <div id="modeBadge" class="school-badge">Unterrichts-Modus</div>
         
         <h2 id="sidebarTitle">SIR Parameter</h2>
         
@@ -20,27 +42,27 @@
             💡 Regler verändert! Neue Werte gelten erst ab nächstem Start.
         </div>
 
-        <div class="input-card">
-            <div class="input-group">
+        <div class="input-card" id="cardBasicPop">
+            <div class="input-group" id="grpPopulation">
                 <label>Populationsgröße (N)</label>
                 <input type="number" id="population" value="1000">
             </div>
-            <div class="input-group">
+            <div class="input-group id-hidden" id="grpInfected">
                 <label>Start-Infizierte (I₀)</label>
                 <input type="number" id="infected" value="5">
             </div>
-            <div class="input-group">
+            <div class="input-group id-hidden" id="grpVaccinated">
                 <label>Start-Immunität (R₀) / Impfquote: <span id="vaccinatedVal">0</span>%</label>
                 <input type="range" id="vaccinated" min="0" max="100" step="5" value="0">
             </div>
         </div>
         
-        <div class="input-card">
-            <div class="input-group">
+        <div class="input-card id-hidden" id="cardRates">
+            <div class="input-group" id="grpInfRate">
                 <label>Ansteckungsrate (β): <span id="infRateVal">30</span>%</label>
                 <input type="range" id="infRate" min="1" max="100" step="1" value="30">
             </div>
-            <div class="input-group">
+            <div class="input-group" id="grpRecTime">
                 <label>Genesungsdauer (in Sekunden)</label>
                 <input type="number" id="recTime" value="6">
             </div>
@@ -73,8 +95,8 @@
     </aside>
 
     <main class="main-content">
-        <div class="main-tabs">
-            <div class="tab-dropdown">
+        <div class="main-tabs" id="mainTabsContainer">
+            <div class="tab-dropdown" id="tabSirDropdown">
                 <button class="main-tab-btn active" data-model="sir-model">Klassisches SIR-Modell (Formel-basiert)</button>
                 <div class="dropdown-content">
                     <button class="sub-tab-btn active" data-view="agent-view">Anschauung: Simulation</button>
@@ -82,7 +104,7 @@
                 </div>
             </div>
             
-            <div class="tab-dropdown">
+            <div class="tab-dropdown id-hidden" id="tabSpatialDropdown">
                 <button class="main-tab-btn" data-model="spatial-model">Raum-Zeit-Modell (Agenten-basiert)</button>
                 <div class="dropdown-content">
                     <button class="sub-tab-btn" data-view="agent-view">Anschauung: Simulation</button>
@@ -107,7 +129,7 @@
             </div>
         </div>
 
-        <div class="formula-lab">
+        <div class="formula-lab id-hidden" id="formulaLabBox">
             <div class="formula-title">🧮 Live-Mathematik (Differentialgleichungen)</div>
             <div class="formula-grid">
                 <div class="formula-card">
@@ -135,6 +157,18 @@
     </main>
 </div>
 
+<div id="tutorialOverlay" class="tutorial-overlay hidden">
+    <div class="tutorial-box">
+        <div class="tutorial-progress">Schritt <span id="tutStepNum">1</span> von <span id="tutStepTotal">5</span></div>
+        <h3 id="tutTitle">Tutorial-Titel</h3>
+        <p id="tutText">Tutorial-Textbeschreibung</p>
+        <div class="tutorial-actions">
+            <button id="tutPrevBtn" class="tut-btn-secondary">Zurück</button>
+            <button id="tutNextBtn" class="tut-btn-primary">Weiter</button>
+        </div>
+    </div>
+</div>
+
 <div id="explanationModal" class="modal hidden">
     <div class="modal-content">
         <span class="close-modal">&times;</span>
@@ -143,7 +177,7 @@
         
         <h3 class="modal-peak-title">1. Infektions-Peak ("Flatten the Curve")</h3>
         <p>Der Peak stellt den Höchststand der gleichzeitig Erkrankten dar. Im Unterricht ist das der wichtigste Bezug zum Gesundheitssystem: Ist die Kurve zu steil, droht eine Überlastung der Krankenhäuser.</p>
-        <p><strong>Warum entsteht er dort?</strong> Zu Beginn infiziert eine kranke Person weit mehr als eine gesunde Person. Erst wenn das Verhältnis von gesunden Personen zu infektiösen Personen kippt, flacht die Kurve ab. Am mathematischen Peak infiziert jede kranke Person im Durchschnitt exakt eine weitere Person (R<sub>eff</sub> = 1$). Danach sinken die Zahlen.</p>
+        <p><strong>Warum entsteht er dort?</strong> Zu Beginn infiziert eine kranke Person weit mehr als eine gesunde Person. Erst wenn das Verhältnis von gesunden Personen zu infektiösen Personen kippt, flacht die Kurve ab. Am mathematischen Peak infiziert jede kranke Person im Durchschnitt exakt eine weitere Person ($R_{eff} = 1$). Danach sinken die Zahlen.</p>
 
         <h3 class="modal-herd-title">2. Schwelle zur Herdenimmunität</h3>
         <p>Herdenimmunität bedeutet, dass so viele Individuen in einer Population immun sind, dass sich ein Erreger nicht mehr epidemisch ausbreiten kann. Die ungeschützten Personen werden von der Gemeinschaft ("Herde") indirekt geschützt.</p>
