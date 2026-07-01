@@ -79,7 +79,6 @@ document.getElementById('infRate').addEventListener('input', e => document.getEl
 document.getElementById('mobility').addEventListener('input', e => document.getElementById('mobilityVal').textContent = parseFloat(e.target.value).toFixed(1));
 document.getElementById('radius').addEventListener('input', e => document.getElementById('radiusVal').textContent = e.target.value);
 
-// Zentralisierte Modell-Umschaltung
 function switchModel(modelType) {
     if (activeModel === modelType) return;
     
@@ -105,18 +104,15 @@ document.querySelectorAll('.sub-tab-btn').forEach(btn => {
         const parentDropdown = btn.closest('.tab-dropdown');
         const associatedModel = parentDropdown.querySelector('.main-tab-btn').dataset.model;
         
-        // Modell wechseln, falls ein Unterpunkt des inaktiven Modells geklickt wurde
         if (activeModel !== associatedModel) {
             switchModel(associatedModel);
         }
 
         activeView = btn.dataset.view;
         
-        // Aktive Klassen synchronisieren
         document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll(`.sub-tab-btn[data-view="${activeView}"]`).forEach(b => b.classList.add('active'));
         
-        // View-Sichtbarkeit anpassen
         document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
         document.getElementById(activeView).classList.add('active');
         
@@ -124,7 +120,6 @@ document.querySelectorAll('.sub-tab-btn').forEach(btn => {
             epicenterChart.update('none');
         }
         
-        // Verhindert Event-Bubbling zum Haupttab
         e.stopPropagation();
     });
 });
@@ -392,7 +387,7 @@ function tickABM() {
             if (Math.random() < 0.01) { const a = Math.random() * Math.PI * 2; const spd = Math.hypot(ag.vx, ag.vy); ag.vx = Math.cos(a) * spd; ag.vy = Math.sin(a) * spd; }
             ag.x += ag.vx; ag.y += ag.vy;
             if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
-            if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
+            if (ag.y < 0) { ag.y = 0; vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
         }
         if (ag.state === 'I' && abmTick - ag.infectedAt >= recTicks) ag.state = 'R';
     }
