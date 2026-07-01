@@ -118,7 +118,7 @@ button:hover { background-color: #059669; }
     display: flex; flex-direction: column; padding: 20px; gap: 15px; height: 100%; overflow: hidden; background-color: #0f172a;
 }
 
-/* TABS & NAVIGATIONS DROPDOWNS */
+/* NAVIGATION UND HOVER-DROPDOWNS */
 .main-tabs { 
     display: flex; 
     gap: 12px; 
@@ -151,7 +151,7 @@ button:hover { background-color: #059669; }
     border-color: #047857; 
 }
 
-/* Dropdown Container */
+/* Dropdown-Menü im Grundzustand unsichtbar */
 .dropdown-content {
     display: none;
     opacity: 0;
@@ -163,7 +163,7 @@ button:hover { background-color: #059669; }
     border: 1px solid #334155;
     border-radius: 0 0 6px 6px;
     box-shadow: 0 10px 20px rgba(0,0,0,0.6);
-    z-index: 20; /* Liegt über dem Canvas */
+    z-index: 20; /* Liegt sicher über der Canvas-Oberfläche */
     padding: 6px;
     flex-direction: column;
     gap: 4px;
@@ -171,7 +171,7 @@ button:hover { background-color: #059669; }
     transition: opacity 0.15s ease-in-out;
 }
 
-/* Hover-Auslöser */
+/* Sicheres Einblenden bei Hover über den Eltern-Container */
 .tab-dropdown:hover .dropdown-content {
     display: flex;
     opacity: 1;
@@ -219,7 +219,7 @@ canvas { display: block; }
 #resetBtn { background-color: #334155; color: #cbd5e1; border: 1px solid #475569; margin-top: -5px; }
 #resetBtn:hover { background-color: #475569; }
 
-/* MODAL STYLING */
+/* MODAL STYLING & DEFINITIVE FARBKORREKTUR */
 .modal {
     position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.75); display: flex; justify-content: center; align-items: center;
 }
@@ -231,9 +231,17 @@ canvas { display: block; }
 .modal h2 { color: #fff; margin-bottom: 10px; font-size: 1.5rem; }
 .modal-sep { border: 0; border-top: 1px solid #334155; margin: 15px 0; }
 
-/* KORREKTUR: Farbcodierung passend zu den Diagramm-Meilensteinen */
-.modal h3 { color: #a855f7; margin: 20px 0 8px 0; font-size: 1.1rem; } /* Herdenimmunität standardmäßig violett */
-.modal h3:first-of-type { color: #f59e0b; } /* Infektions-Peak jetzt korrekt gold-orange */
+/* Explizite Klassen-Farbzuweisung (Verhindert jegliche Kaskaden-Fehler) */
+.modal h3 {
+    margin: 20px 0 8px 0; 
+    font-size: 1.1rem; 
+}
+.modal h3.modal-peak-title { 
+    color: #f59e0b !important; /* Exakt Gold/Orange wie im Live-Chart & Theorie-Peak */
+}
+.modal h3.modal-herd-title { 
+    color: #a855f7 !important; /* Exakt Violett/Lila wie an der Herdenimmunisierungsschwelle */
+}
 
 .modal p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 10px; }
 
