@@ -1,5 +1,5 @@
 // ============================================================
-//  EPIDEMIE-SIMULATOR — script.js (Vollversion mit Dropdown-Navigation)
+//  EPIDEMIE-SIMULATOR — script.js
 // ============================================================
 
 let animationId       = null;
@@ -94,29 +94,28 @@ function switchModel(modelType) {
 }
 
 document.querySelectorAll('.main-tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
         switchModel(btn.dataset.model);
     });
 });
 
 document.querySelectorAll('.sub-tab-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
-        // Finde heraus, zu welchem Modell dieses Dropdown gehört
         const parentDropdown = btn.closest('.tab-dropdown');
         const associatedModel = parentDropdown.querySelector('.main-tab-btn').dataset.model;
         
-        // Falls das Modell gewechselt wurde, führen wir den Modellwechsel aus (inkl. Reset)
+        // Falls das Modell gewechselt werden muss
         if (activeModel !== associatedModel) {
             switchModel(associatedModel);
         }
 
-        // View wechseln
         activeView = btn.dataset.view;
         
-        // Aktive Klassen synchronisieren (über alle Dropdowns hinweg)
+        // Synchronisiere aktive Zustände der Sub-Tabs
         document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll(`.sub-tab-btn[data-view="${activeView}"]`).forEach(b => b.classList.add('active'));
         
+        // Content-Sichtbarkeit umschalten
         document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
         document.getElementById(activeView).classList.add('active');
         
@@ -264,7 +263,6 @@ function pushChartPoint(t, S, I, R, beta, gamma) {
     if (!epicenterChart || !chartInitialized) return;
     const ds = epicenterChart.data.datasets;
 
-    // Speichere Rohdaten für den CSV-Export
     liveDataHistory.push({ time: t.toFixed(2), S: S, I: I, R: R });
 
     if (I > liveMaxI) { liveMaxI = I; livePeakPoint = { x: t, y: I }; ds[2].data = [livePeakPoint]; }
@@ -277,24 +275,16 @@ function pushChartPoint(t, S, I, R, beta, gamma) {
     ds[offset + 2].data.push({ x: t, y: R });
 }
 
-// DYNAMISCHER CSV EXPORT (SCHÜTZT SICH VOR DER EXCEL-DATUMS-AUTOKORREKTUR)
 function exportToCSV() {
     if (liveDataHistory.length === 0) return;
-
-    // Header mit Semikolon als Trenner für deutschen Excel-Standard
     let csvContent = "Zeitpunkt_s;Gesunde_S;Infizierte_I;Genesene_R\r\n";
-    
     liveDataHistory.forEach(row => {
-        // Trick: ="Wert" zwingt Excel dazu, die Zahl als reinen Text zu interpretieren
         const excelSafeTime = `="${row.time}"`;
         csvContent += `${excelSafeTime};${row.S};${row.I};${row.R}\r\n`;
     });
-
-    // Erstelle Download-Link mit UTF-8-BOM (Beseitigt Formatierungsfehler in Excel)
     const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const modelName = activeModel === 'sir-model' ? "klassisches_SIR" : "Raum_Zeit_ABM";
-    
     link.href = URL.createObjectURL(blob);
     link.setAttribute("download", `simulationsdaten_${modelName}.csv`);
     document.body.appendChild(link);
@@ -307,7 +297,6 @@ function computeSIRTheoryAndHighlights(p, betaOverride) {
     const gamma = 1 / p.recSeconds;
     const R0_init = Math.round(p.N * p.vaccPct / 100); const I0 = Math.min(p.I0, p.N - R0_init); let S = p.N - I0 - R0_init; let I = I0; let R = R0_init;
     const data = { S: [], I: [], R: [], time: [] }; const dt = 0.05; const maxTime = 90; const steps = Math.round(maxTime / dt);
-
     theoryPeakPoint = null; theoryHerdPoint = null; let maxTheoryI = -1; const SKrit = beta > 0 ? p.N * (gamma / beta) : 0;
 
     for (let step = 0; step <= steps; step++) {
@@ -322,12 +311,10 @@ function computeSIRTheoryAndHighlights(p, betaOverride) {
 
 function computeEffectiveBeta(p) { const area = p.roomW * p.roomH; return p.beta * Math.PI * p.radius * p.radius * p.N / area; }
 
-// 1) SIR-MODELL RUNNER
 function initSIR() {
     const p = activeSimulationParams; canvas.width = 600; canvas.height = 400;
     const R0_init = Math.round(p.N * p.vaccPct / 100); const I0 = Math.min(p.I0, p.N - R0_init); const S_count = p.N - I0 - R0_init;
     sirAgents = []; sirTick = 0; sirTheory = computeSIRTheoryAndHighlights(p); initChart('sir', sirTheory);
-
     for (let i = 0; i < p.N; i++) {
         sirAgents.push({
             x: 10 + Math.random() * 580, y: 10 + Math.random() * 380,
@@ -360,7 +347,6 @@ function tickSIR() {
     }
     let S = 0, I = 0, R = 0;
     for (const ag of sirAgents) { if (ag.state === 'S') S++; else if (ag.state === 'I') I++; else R++; }
-
     const t = sirTick / FPS;
     if (sirTick % 5 === 0) { pushChartPoint(t, S, I, R, p.beta, gamma); if (activeView === 'graph-view' && epicenterChart) epicenterChart.update('none'); }
     updateMathDashboard(S, I, R, p.beta, gamma); drawSIRAgents(S, I, R);
@@ -373,24 +359,16 @@ function drawSIRAgents(S, I, R) {
     drawHUD(600, 400, S, I, R, sirAgents.length, sirTick);
 }
 
-// 2) ABM RUNNER
 function initABM() {
     const p = activeSimulationParams; canvas.width = p.roomW; canvas.height = p.roomH;
     const R0_init = Math.round(p.N * p.vaccPct / 100); const I0 = Math.min(p.I0, p.N - R0_init); const S_count = p.N - I0 - R0_init;
     abmAgents = []; abmTick = 0; const betaEff = computeEffectiveBeta(p); abmTheory = computeSIRTheoryAndHighlights(p, betaEff); initChart('abm', abmTheory);
-
     for (let i = 0; i < p.N; i++) {
         const angle = Math.random() * Math.PI * 2;
-        // Wenn die Mobilität 0 ist, wird die Geschwindigkeit rigoros auf 0 gesetzt
         const speed = p.mobility <= 0.001 ? 0 : p.mobility * (0.6 + Math.random() * 0.8);
-        
         abmAgents.push({
-            x: Math.random() * p.roomW, 
-            y: Math.random() * p.roomH, 
-            vx: Math.cos(angle) * speed, 
-            vy: Math.sin(angle) * speed,
-            state: i < S_count ? 'S' : i < S_count + I0 ? 'I' : 'R', 
-            infectedAt: i < S_count ? null : (i < S_count + I0 ? 0 : null),
+            x: Math.random() * p.roomW, y: Math.random() * p.roomH, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
+            state: i < S_count ? 'S' : i < S_count + I0 ? 'I' : 'R', infectedAt: i < S_count ? null : (i < S_count + I0 ? 0 : null),
         });
     }
     pushChartPoint(0, S_count, I0, R0_init, betaEff, 1/p.recSeconds);
@@ -408,21 +386,11 @@ function tickABM() {
     const p = activeSimulationParams; const gamma = 1 / p.recSeconds; const betaEff = computeEffectiveBeta(p); const recTicks = p.recSeconds * FPS; abmTick++; const r2 = p.radius * p.radius;
 
     for (const ag of abmAgents) {
-        // Bewegung komplett blockieren, wenn die Simulation im Stillstand gestartet wurde
         if (p.mobility > 0.001) {
-            if (Math.random() < 0.01) { 
-                const a = Math.random() * Math.PI * 2; 
-                const spd = Math.hypot(ag.vx, ag.vy); 
-                ag.vx = Math.cos(a) * spd; 
-                ag.vy = Math.sin(a) * spd; 
-            }
-            ag.x += ag.vx; 
-            ag.y += ag.vy;
-            
-            if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } 
-            if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
-            if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } 
-            if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
+            if (Math.random() < 0.01) { const a = Math.random() * Math.PI * 2; const spd = Math.hypot(ag.vx, ag.vy); ag.vx = Math.cos(a) * spd; ag.vy = Math.sin(a) * spd; }
+            ag.x += ag.vx; ag.y += ag.vy;
+            if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
+            if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
         }
         if (ag.state === 'I' && abmTick - ag.infectedAt >= recTicks) ag.state = 'R';
     }
@@ -439,7 +407,6 @@ function tickABM() {
 
     let S = 0, I = 0, R = 0;
     for (const ag of abmAgents) { if (ag.state === 'New_I') ag.state = 'I'; if (ag.state === 'S') S++; else if (ag.state === 'I') I++; else R++; }
-
     const t = abmTick / FPS;
     if (abmTick % 5 === 0) { pushChartPoint(t, S, I, R, betaEff, gamma); if (activeView === 'graph-view' && epicenterChart) epicenterChart.update('none'); }
     updateMathDashboard(S, I, R, betaEff, gamma); drawABM(p, S, I, R);
