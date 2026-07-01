@@ -387,7 +387,7 @@ function tickABM() {
             if (Math.random() < 0.01) { const a = Math.random() * Math.PI * 2; const spd = Math.hypot(ag.vx, ag.vy); ag.vx = Math.cos(a) * spd; ag.vy = Math.sin(a) * spd; }
             ag.x += ag.vx; ag.y += ag.vy;
             if (ag.x < 0) { ag.x = 0; ag.vx *= -1; } if (ag.x > p.roomW) { ag.x = p.roomW; ag.vx *= -1; }
-            if (ag.y < 0) { ag.y = 0; vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
+            if (ag.y < 0) { ag.y = 0; ag.vy *= -1; } if (ag.y > p.roomH) { ag.y = p.roomH; ag.vy *= -1; }
         }
         if (ag.state === 'I' && abmTick - ag.infectedAt >= recTicks) ag.state = 'R';
     }
