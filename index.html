@@ -74,13 +74,22 @@
 
     <main class="main-content">
         <div class="main-tabs">
-            <button class="main-tab-btn active" data-model="sir-model">Klassisches SIR-Modell (Formel-basiert)</button>
-            <button class="main-tab-btn" data-model="spatial-model">Raum-Zeit-Modell (Agenten-basiert)</button>
-        </div>
+            <div class="tab-dropdown">
+                <button class="main-tab-btn active" data-model="sir-model">Klassisches SIR-Modell (Formel-basiert)</button>
+                <div class="dropdown-content">
+                    <button class="sub-tab-btn active" data-view="agent-view">Anschauung: Simulation</button>
+                    <button class="sub-tab-btn" data-view="graph-view">Auswertung: Diagramm & Highlights</button>
+                </div>
+            </div>
+            
+            <div class="tab-dropdown">
+                <button class="main-tab-btn" data-model="spatial-model">Raum-Zeit-Modell (Agenten-basiert)</button>
+                <div class="dropdown-content">
+                    <button class="sub-tab-btn active" data-view="agent-view">Anschauung: Simulation</button>
+                    <button class="sub-tab-btn" data-view="graph-view">Auswertung: Diagramm & Highlights</button>
+                </div>
+            </div>
 
-        <div class="sub-tabs">
-            <button class="sub-tab-btn active" data-view="agent-view">Anschauung: Simulation</button>
-            <button class="sub-tab-btn" data-view="graph-view">Auswertung: Diagramm & Highlights</button>
             <button id="infoModalBtn" class="info-btn">❓ Begriffe erklären</button>
         </div>
 
