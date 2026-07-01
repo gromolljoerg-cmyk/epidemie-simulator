@@ -79,6 +79,7 @@ document.getElementById('infRate').addEventListener('input', e => document.getEl
 document.getElementById('mobility').addEventListener('input', e => document.getElementById('mobilityVal').textContent = parseFloat(e.target.value).toFixed(1));
 document.getElementById('radius').addEventListener('input', e => document.getElementById('radiusVal').textContent = e.target.value);
 
+// Zentralisierte Modell-Umschaltung
 function switchModel(modelType) {
     if (activeModel === modelType) return;
     
@@ -94,7 +95,7 @@ function switchModel(modelType) {
 }
 
 document.querySelectorAll('.main-tab-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', () => {
         switchModel(btn.dataset.model);
     });
 });
@@ -104,18 +105,18 @@ document.querySelectorAll('.sub-tab-btn').forEach(btn => {
         const parentDropdown = btn.closest('.tab-dropdown');
         const associatedModel = parentDropdown.querySelector('.main-tab-btn').dataset.model;
         
-        // Falls das Modell gewechselt werden muss
+        // Modell wechseln, falls ein Unterpunkt des inaktiven Modells geklickt wurde
         if (activeModel !== associatedModel) {
             switchModel(associatedModel);
         }
 
         activeView = btn.dataset.view;
         
-        // Synchronisiere aktive Zustände der Sub-Tabs
+        // Aktive Klassen synchronisieren
         document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll(`.sub-tab-btn[data-view="${activeView}"]`).forEach(b => b.classList.add('active'));
         
-        // Content-Sichtbarkeit umschalten
+        // View-Sichtbarkeit anpassen
         document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
         document.getElementById(activeView).classList.add('active');
         
@@ -123,6 +124,7 @@ document.querySelectorAll('.sub-tab-btn').forEach(btn => {
             epicenterChart.update('none');
         }
         
+        // Verhindert Event-Bubbling zum Haupttab
         e.stopPropagation();
     });
 });
