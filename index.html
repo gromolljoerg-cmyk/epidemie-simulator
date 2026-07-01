@@ -80,11 +80,11 @@
                     <input type="number" id="roomHeight" value="400" min="200" max="800">
                 </div>
             </div>
-            <div class="input-group">
+            <div class="input-group" id="grpMobility">
                 <label>Mobilität (Tempo): <span id="mobilityVal">2.0</span></label>
                 <input type="range" id="mobility" min="0" max="4" step="0.1" value="2.0">
             </div>
-            <div class="input-group">
+            <div class="input-group" id="grpRadius">
                 <label>Ansteckungsradius: <span id="radiusVal">12</span> px</label>
                 <input type="range" id="radius" min="2" max="30" step="1" value="12">
             </div>
@@ -97,7 +97,7 @@
     <main class="main-content">
         <div class="main-tabs" id="mainTabsContainer">
             <div class="tab-dropdown" id="tabSirDropdown">
-                <button class="main-tab-btn active" data-model="sir-model">Klassisches SIR-Modell (Formel-basiert)</button>
+                <button class="main-tab-btn active" data-model="sir-model" id="btnModelSir">Klassisches SIR-Modell (Formel-basiert)</button>
                 <div class="dropdown-content">
                     <button class="sub-tab-btn active" data-view="agent-view">Anschauung: Simulation</button>
                     <button class="sub-tab-btn" data-view="graph-view">Auswertung: Diagramm & Highlights</button>
@@ -105,7 +105,7 @@
             </div>
             
             <div class="tab-dropdown id-hidden" id="tabSpatialDropdown">
-                <button class="main-tab-btn" data-model="spatial-model">Raum-Zeit-Modell (Agenten-basiert)</button>
+                <button class="main-tab-btn" data-model="spatial-model" id="btnModelSpatial">Raum-Zeit-Modell (Agenten-basiert)</button>
                 <div class="dropdown-content">
                     <button class="sub-tab-btn" data-view="agent-view">Anschauung: Simulation</button>
                     <button class="sub-tab-btn" data-view="graph-view">Auswertung: Diagramm & Highlights</button>
@@ -159,7 +159,7 @@
 
 <div id="tutorialOverlay" class="tutorial-overlay hidden">
     <div class="tutorial-box">
-        <div class="tutorial-progress">Schritt <span id="tutStepNum">1</span> von <span id="tutStepTotal">5</span></div>
+        <div class="tutorial-progress">Schritt <span id="tutStepNum">1</span> von <span id="tutStepTotal">7</span></div>
         <h3 id="tutTitle">Tutorial-Titel</h3>
         <p id="tutText">Tutorial-Textbeschreibung</p>
         <div class="tutorial-actions">
