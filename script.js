@@ -17,7 +17,6 @@ let sirTick    = 0;
 let abmAgents  = [];
 let abmTick    = 0;
 
-// Daten-Array für den Live-Export
 let liveDataHistory = [];
 
 const FPS         = 60;
@@ -34,18 +33,182 @@ let liveMaxI = -1;
 let livePeakPoint = null;
 let liveHerdPoint = null;
 
-// DOM Elemente
-const canvas      = document.getElementById('simulationCanvas');
-const ctx         = canvas.getContext('2d');
-const startBtn    = document.getElementById('startBtn');
-const exportCsvBtn = document.getElementById('exportCsvBtn');
-const paramNotice = document.getElementById('paramNotice');
+// Modus-Steuerung ("free" oder "tutorial")
+let currentMode = "free";
+let tutorialStep = 0;
 
+// DOM Elemente Haupt-App
+const canvas       = document.getElementById('simulationCanvas');
+const ctx          = canvas.getContext('2d');
+const startBtn     = document.getElementById('startBtn');
+const exportCsvBtn = document.getElementById('exportCsvBtn');
+const paramNotice  = document.getElementById('paramNotice');
+
+// Zurücksetzen Button hinzufügen
 const resetBtn = document.createElement('button');
 resetBtn.id = 'resetBtn';
 resetBtn.textContent = 'Zurücksetzen';
 startBtn.after(resetBtn);
 
+// DOM Elemente Landing Page & Tutorial
+const landingPage        = document.getElementById('landingPage');
+const mainContainer      = document.getElementById('mainContainer');
+const chooseTutorialBtn  = document.getElementById('chooseTutorialBtn');
+const chooseFreeBtn      = document.getElementById('chooseFreeBtn');
+const backToMenuBtn      = document.getElementById('backToMenuBtn');
+const modeBadge          = document.getElementById('modeBadge');
+const tutorialOverlay    = document.getElementById('tutorialOverlay');
+const tutStepNum         = document.getElementById('tutStepNum');
+const tutStepTotal       = document.getElementById('tutStepTotal');
+const tutTitle           = document.getElementById('tutTitle');
+const tutText            = document.getElementById('tutText');
+const tutPrevBtn         = document.getElementById('tutPrevBtn');
+const tutNextBtn         = document.getElementById('tutNextBtn');
+
+// Definition der Tutorial-Schritte
+const tutorialSteps = [
+    {
+        title: "Willkommen beim Epidemie-Simulator! 👋",
+        text: "In diesem Tutorial lernst du Schritt für Schritt, wie sich Infektionen mathematisch und räumlich ausbreiten. Wir fangen ganz einfach an. Schau dir die Sidebar links an: Aktuell siehst du nur die Populationsgröße (N). Klicke auf 'Simulation starten', um zu sehen, wie sich die Punkte verteilen.",
+        setup: () => {
+            hideAllUIElements();
+            showElements(['cardBasicPop', 'grpPopulation']);
+        }
+    },
+    {
+        title: "Die Keimzelle: Start-Infizierte (I₀) 🦠",
+        text: "Jetzt schalten wir das Eingabefeld für die 'Start-Infizierten' frei. Ohne infizierte Personen kann sich keine Krankheit ausbreiten. Stelle ruhig mal 5 oder 10 Personen ein und klicke auf Start. Du siehst rote infektiöse Punkte, die gesunde blaue Punkte anstecken!",
+        setup: () => {
+            hideAllUIElements();
+            showElements(['cardBasicPop', 'grpPopulation', 'grpInfected']);
+        }
+    },
+    {
+        title: "Dynamik: Ansteckung & Genesung 📈",
+        text: "Nun kommen die Kernraten ins Spiel. Die Ansteckungsrate (β) steuert, wie infektiös die Krankheit ist. Die Genesungsdauer gibt an, wie viele Sekunden ein Punkt rot bleibt, bevor er grün (genesen und immun) wird. Jetzt ist auch die 'Live-Mathematik' unten aktiv, die dir zeigt, wie viele Menschen pro Sekunde ihren Zustand wechseln.",
+        setup: () => {
+            hideAllUIElements();
+            showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'formulaLabBox']);
+        }
+    },
+    {
+        title: "Die Auswertung verstehen 📊",
+        text: "Wechsle oben im Menü über den Reiter 'Klassisches SIR-Modell' auf den Unterpunkt 'Auswertung: Diagramm'. Dort siehst du die Kurven live wachsen! Achte besonders auf den goldenen Punkt (Infektions-Peak) und den lila Kreis (Schwelle zur Herdenimmunität).",
+        setup: () => {
+            hideAllUIElements();
+            showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'formulaLabBox']);
+        }
+    },
+    {
+        title: "Der Realitätscheck: Das Agenten-basierte Modell 🏃‍♂️",
+        text: "Zum Schluss schalten wir das 'Raum-Zeit-Modell' frei. Schalte oben auf den zweiten Hauptreiter um. Hier bewegen sich die Punkte in einem echten virtuellen Raum! Du kannst jetzt sogar die Bewegungsgeschwindigkeit (Mobilität) und den Ansteckungsradius der Erreger manipulieren. Viel Spaß beim Erforschen!",
+        setup: () => {
+            hideAllUIElements();
+            showElements(['cardBasicPop', 'grpPopulation', 'grpInfected', 'cardRates', 'grpInfRate', 'grpRecTime', 'formulaLabBox', 'tabSpatialDropdown', 'spatialParameters']);
+        }
+    }
+];
+
+// Hilfsfunktionen für das Tutorial-UI-Shifting
+function hideAllUIElements() {
+    const items = ['grpInfected', 'grpVaccinated', 'cardRates', 'spatialParameters', 'tabSpatialDropdown', 'formulaLabBox'];
+    items.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.add('id-hidden');
+    });
+}
+
+function showAllUIElements() {
+    const items = ['grpInfected', 'grpVaccinated', 'cardRates', 'spatialParameters', 'tabSpatialDropdown', 'formulaLabBox'];
+    items.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.remove('id-hidden');
+    });
+}
+
+function showElements(ids) {
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.classList.remove('id-hidden');
+    });
+}
+
+// LANDING PAGE EVENT LISTENERS
+chooseFreeBtn.addEventListener('click', () => {
+    currentMode = "free";
+    landingPage.classList.add('hidden');
+    mainContainer.classList.remove('hidden');
+    tutorialOverlay.classList.add('hidden');
+    modeBadge.textContent = "Freies Simulieren";
+    modeBadge.style.backgroundColor = "#10b981";
+    showAllUIElements();
+    resetSimulation();
+});
+
+chooseTutorialBtn.addEventListener('click', () => {
+    currentMode = "tutorial";
+    landingPage.classList.add('hidden');
+    mainContainer.classList.remove('hidden');
+    tutorialOverlay.classList.remove('hidden');
+    modeBadge.textContent = "Tutorial-Modus";
+    modeBadge.style.backgroundColor = "#3b82f6";
+    tutorialStep = 0;
+    updateTutorialStep();
+    resetSimulation();
+});
+
+backToMenuBtn.addEventListener('click', () => {
+    stopSimulation();
+    mainContainer.classList.add('hidden');
+    tutorialOverlay.classList.add('hidden');
+    landingPage.classList.remove('hidden');
+});
+
+// TUTORIAL NAVIGATION LISTENERS
+tutNextBtn.addEventListener('click', () => {
+    if (tutorialStep < tutorialSteps.length - 1) {
+        tutorialStep++;
+        updateTutorialStep();
+        resetSimulation();
+    } else {
+        // Am Ende angekommen -> wechsle in den freien Modus
+        currentMode = "free";
+        tutorialOverlay.classList.add('hidden');
+        modeBadge.textContent = "Freies Simulieren";
+        modeBadge.style.backgroundColor = "#10b981";
+        showAllUIElements();
+        resetSimulation();
+    }
+});
+
+tutPrevBtn.addEventListener('click', () => {
+    if (tutorialStep > 0) {
+        tutorialStep--;
+        updateTutorialStep();
+        resetSimulation();
+    }
+});
+
+function updateTutorialStep() {
+    const stepData = tutorialSteps[tutorialStep];
+    tutStepNum.textContent = tutorialStep + 1;
+    tutStepTotal.textContent = tutorialSteps.length;
+    tutTitle.textContent = stepData.title;
+    tutText.textContent = stepData.text;
+    
+    // Buttons steuern
+    tutPrevBtn.disabled = (tutorialStep === 0);
+    if (tutorialStep === tutorialSteps.length - 1) {
+        tutNextBtn.textContent = "Freies Simulieren starten 🚀";
+    } else {
+        tutNextBtn.textContent = "Weiter";
+    }
+    
+    // UI Zustand herstellen
+    stepData.setup();
+}
+
+// PARAMETER LIVE-ABFRAGE
 function readLiveGUIParams() {
     return {
         N:          parseInt(document.getElementById('population').value)  || 1000,
